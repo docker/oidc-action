@@ -11,6 +11,7 @@ This is the official action for OIDC integration with Docker Hub.
 ## Example Usage
 
 ### CLI login
+
 ```yaml
 steps:
   - name: OIDC token
