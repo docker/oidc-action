@@ -1,20 +1,22 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
+  "name": "oidc-action",
+  "description": "GitHub OIDC action for Docker Hub",
   "version": "0.0.0",
-  "author": "",
+  "author": "Docker, Inc.",
   "type": "module",
   "private": true,
   "homepage": "https://github.com/actions/typescript-action",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/docker/oidc-action.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/docker/oidc-action/issues"
   },
   "keywords": [
-    "actions"
+    "actions",
+    "docker",
+    "oidc"
   ],
   "exports": {
     ".": "./dist/index.js"
@@ -35,9 +37,10 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
-    "@actions/core": "^1.11.1"
+    "@actions/core": "^1.11.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.9",
@@ -58,6 +61,7 @@
     "eslint-plugin-prettier": "^5.4.0",
     "jest": "^29.7.0",
     "make-coverage-badge": "^1.2.0",
+    "nock": "^14.0.5",
     "prettier": "^3.5.3",
     "prettier-eslint": "^16.4.2",
     "rollup": "^4.41.0",

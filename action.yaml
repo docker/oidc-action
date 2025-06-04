@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-action.json
+name: oidc-action
+description: |
+  An OIDC action for usage with Docker Hub. This exchanges a GitHub ID token for 
+  the current action workflow in exchange for a short lived access token to be 
+  used with Docker Hub.
+author: docker
+inputs:
+  connection_id:
+    description: |
+      The connection identifier to use for the OIDC flow. This can be found in
+      the management section for OIDC connections.
+    required: true
+  expires_in:
+    description: |
+      The number of seconds the token should be valid for. This can be used to
+      set a custom expiration time for the token. Value must be a min of 300 
+      (5 minutes) and a max of 3600 (1 hour). Default is 300.
+    default: '300'
+
+outputs:
+  token:
+    description: |
+      The token that was returned by the OIDC exchange. This can be used as a 
+      password to the docker/login-action or as a bearer token for API requests.
+
+runs:
+  using: node20
+  main: dist/index.js
