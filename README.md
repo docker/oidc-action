@@ -1,9 +1,9 @@
 # Docker OIDC Action
 
-[![GitHub Super-Linter](https://github.com/docker/oidc-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
-![CI](https://github.com/docker/oidc-action/actions/workflows/ci.yml/badge.svg)
-[![Check dist/](https://github.com/docker/oidc-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/check-dist.yml)
-[![CodeQL](https://github.com/docker/oidc-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
+[![GitHub Super-Linter](https://github.com/docker/oidc-action/actions/workflows/linter.yaml/badge.svg)](https://github.com/super-linter/super-linter)
+![CI](https://github.com/docker/oidc-action/actions/workflows/ci.yaml/badge.svg)
+[![Check dist/](https://github.com/docker/oidc-action/actions/workflows/check-dist.yaml/badge.svg)](https://github.com/docker/oidc-action/actions/workflows/check-dist.yaml)
+[![CodeQL](https://github.com/docker/oidc-action/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/docker/oidc-action/actions/workflows/codeql-analysis.yaml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 This is the official action for OIDC integration with Docker Hub.
