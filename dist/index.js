@@ -27246,18 +27246,10 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-/**
- * Waits for a number of milliseconds.
- *
- * @param milliseconds The number of milliseconds to wait.
- * @returns Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise((resolve) => {
-        if (isNaN(milliseconds))
-            throw new Error('milliseconds is not a number');
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
+var REGEX = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$/i;
+
+function validate(uuid) {
+    return typeof uuid === 'string' && REGEX.test(uuid);
 }
 
 /**
@@ -27267,21 +27259,54 @@ async function wait(milliseconds) {
  */
 async function run() {
     try {
-        const ms = coreExports.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        coreExports.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        coreExports.debug(new Date().toTimeString());
-        await wait(parseInt(ms, 10));
-        coreExports.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        coreExports.setOutput('time', new Date().toTimeString());
+        const input = getInput();
+        const idToken = await coreExports.getIDToken('api.docker.com');
+        const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': `github.com/docker/oidc-action` // TODO: Add version
+            },
+            body: JSON.stringify({
+                connection_id: input.connectionId,
+                token: idToken
+            })
+        });
+        if (!resp.ok) {
+            const errBody = (await resp.json());
+            coreExports.setFailed(`oidc token request failed with a status of ${resp.status}: ${errBody.message}`);
+            return;
+        }
+        const body = (await resp.json());
+        coreExports.setOutput('token', body.access_token);
     }
-    catch (error) {
-        // Fail the workflow run if an error occurs
-        if (error instanceof Error)
-            coreExports.setFailed(error.message);
+    catch (e) {
+        if (e instanceof Error) {
+            coreExports.setFailed(e.message);
+            return;
+        }
+        throw e;
     }
+}
+/**
+ * Parses, validates, and returns inputs.
+ *
+ * @returns Input
+ */
+function getInput() {
+    const connectionId = coreExports.getInput('connection_id');
+    const expiresInInput = coreExports.getInput('expires_in');
+    if (!validate(connectionId)) {
+        throw new Error('Invalid connection_id. Must be a v4 UUID.');
+    }
+    const expiresIn = Number(expiresInInput);
+    if (isNaN(expiresIn) || expiresIn < 300 || expiresIn > 3600) {
+        throw new Error(`Invalid expires_in: ${expiresInInput}. Must be between 300 and 3600`);
+    }
+    return {
+        connectionId,
+        expiresIn
+    };
 }
 
 /**

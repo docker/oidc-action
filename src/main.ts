@@ -1,5 +1,20 @@
-import * as core from '@actions/core'
-import { wait } from './wait.js'
+'use strict';
+
+import * as core from '@actions/core';
+import { validate as uuidValidate } from 'uuid';
+
+type Input = {
+  connectionId: string;
+  expiresIn: number;
+};
+
+type ResponseBody = {
+  access_token: string;
+};
+
+type ErrorBody = {
+  message: string;
+};
 
 /**
  * The main function for the action.
@@ -8,20 +23,67 @@ import { wait } from './wait.js'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const input = getInput();
+    const idToken = await core.getIDToken('api.docker.com');
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': `github.com/docker/oidc-action` // TODO: Add version
+      },
+      body: JSON.stringify({
+        connection_id: input.connectionId,
+        token: idToken
+      })
+    });
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    if (!resp.ok) {
+      const errBody = (await resp.json()) as ErrorBody;
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+      core.setFailed(
+        `oidc token request failed with a status of ${resp.status}: ${errBody.message}`
+      );
+
+      return;
+    }
+
+    const body = (await resp.json()) as ResponseBody;
+
+    core.setOutput('token', body.access_token);
+  } catch (e) {
+    if (e instanceof Error) {
+      core.setFailed(e.message);
+
+      return;
+    }
+
+    throw e;
   }
+}
+
+/**
+ * Parses, validates, and returns inputs.
+ *
+ * @returns Input
+ */
+function getInput(): Input {
+  const connectionId = core.getInput('connection_id');
+  const expiresInInput = core.getInput('expires_in');
+
+  if (!uuidValidate(connectionId)) {
+    throw new Error('Invalid connection_id. Must be a v4 UUID.');
+  }
+
+  const expiresIn = Number(expiresInInput);
+  if (isNaN(expiresIn) || expiresIn < 300 || expiresIn > 3600) {
+    throw new Error(
+      `Invalid expires_in: ${expiresInInput}. Must be between 300 and 3600`
+    );
+  }
+
+  return {
+    connectionId,
+    expiresIn
+  };
 }
