@@ -3,7 +3,7 @@
 [![GitHub Super-Linter](https://github.com/docker/oidc-action/actions/workflows/linter.yaml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/docker/oidc-action/actions/workflows/ci.yaml/badge.svg)
 [![Check dist/](https://github.com/docker/oidc-action/actions/workflows/check-dist.yaml/badge.svg)](https://github.com/docker/oidc-action/actions/workflows/check-dist.yaml)
-[![CodeQL](https://github.com/docker/oidc-action/actions/workflows/codeql-analysis.yaml/badge.svg)](https://github.com/docker/oidc-action/actions/workflows/codeql-analysis.yaml)
+[![CodeQL](https://github.com/docker/oidc-action/actions/workflows/codeql.yaml/badge.svg)](https://github.com/docker/oidc-action/actions/workflows/codeql.yaml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 This is the official action for OIDC integration with Docker Hub.
