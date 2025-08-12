@@ -16,7 +16,7 @@ This is the official action for OIDC integration with Docker Hub.
 steps:
   - name: OIDC token
     id: docker_oidc
-    uses: docker/oidc-action@v1
+    uses: docker/oidc-action@v0
     with:
       connection_id: 867f9d74-789a-4828-a856-12d46bfbbbe7
 
