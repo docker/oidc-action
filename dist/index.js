@@ -27261,7 +27261,8 @@ async function run() {
     try {
         const input = getInput();
         const idToken = await coreExports.getIDToken('api.docker.com');
-        const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
+        const hubHost = process.env.DOCKERHUB_HOST || 'hub.docker.com';
+        const resp = await fetch(`https://${hubHost}/v2/auth/oidc/token`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
