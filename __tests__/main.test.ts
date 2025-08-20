@@ -87,6 +87,7 @@ describe('main.ts', () => {
     mockInput();
     await run();
     expect(core.setFailed).not.toHaveBeenCalled();
+    expect(core.setSecret).toHaveBeenNthCalledWith(1, 'test_access_token');
     expect(core.setOutput).toHaveBeenNthCalledWith(
       1,
       'token',
