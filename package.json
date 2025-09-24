@@ -5,7 +5,7 @@
   "author": "Docker, Inc.",
   "type": "module",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/docker/oidc-action",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/docker/oidc-action.git"
