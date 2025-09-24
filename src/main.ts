@@ -25,12 +25,7 @@ export async function run(): Promise<void> {
   try {
     const input = getInput();
     const idToken = await core.getIDToken('api.docker.com');
-    if (core.isDebug()) {
-      core.debug(`Docker OIDC Connection ID: ${input.connectionId}`);
-      core.debug(
-        `You can manage and debug this connection here: https://app.docker.com/accounts/docker/admin/oidc-connections/${input.connectionId}`
-      );
-    }
+    core.debug(`Docker OIDC Connection ID: ${input.connectionId}`);
 
     const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
       method: 'POST',
