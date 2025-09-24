@@ -27261,6 +27261,10 @@ async function run() {
     try {
         const input = getInput();
         const idToken = await coreExports.getIDToken('api.docker.com');
+        if (coreExports.isDebug()) {
+            coreExports.debug(`Docker OIDC Connection ID: ${input.connectionId}`);
+            coreExports.debug(`You can manage and debug this connection here: https://app.docker.com/accounts/docker/admin/oidc-connections/${input.connectionId}`);
+        }
         const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
             method: 'POST',
             headers: {
@@ -27278,6 +27282,7 @@ async function run() {
             return;
         }
         const body = (await resp.json());
+        coreExports.setSecret(body.access_token);
         coreExports.setOutput('token', body.access_token);
     }
     catch (e) {
