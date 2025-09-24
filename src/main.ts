@@ -56,6 +56,7 @@ export async function run(): Promise<void> {
 
     const body = (await resp.json()) as ResponseBody;
 
+    core.setSecret(body.access_token);
     core.setOutput('token', body.access_token);
   } catch (e) {
     if (e instanceof Error) {
