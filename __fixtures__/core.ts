@@ -9,3 +9,5 @@ export const setOutput = jest.fn<typeof core.setOutput>();
 export const setFailed = jest.fn<typeof core.setFailed>();
 export const warning = jest.fn<typeof core.warning>();
 export const getIDToken = jest.fn<typeof core.getIDToken>();
+export const isDebug = jest.fn<typeof core.isDebug>();
+export const setSecret = jest.fn<typeof core.setSecret>();
