@@ -27278,6 +27278,7 @@ async function run() {
             return;
         }
         const body = (await resp.json());
+        coreExports.setSecret(body.access_token); // redacted in workflow logs
         coreExports.setOutput('token', body.access_token);
     }
     catch (e) {
