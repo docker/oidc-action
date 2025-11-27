@@ -27269,7 +27269,8 @@ async function run() {
             },
             body: JSON.stringify({
                 connection_id: input.connectionId,
-                token: idToken
+                token: idToken,
+                expires_in: input.expiresIn
             })
         });
         if (!resp.ok) {

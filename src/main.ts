@@ -34,7 +34,8 @@ export async function run(): Promise<void> {
       },
       body: JSON.stringify({
         connection_id: input.connectionId,
-        token: idToken
+        token: idToken,
+        expires_in: input.expiresIn
       })
     });
 
