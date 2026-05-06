@@ -6,7 +6,6 @@ on:
   push:
     branches: [main]
 
-
 jobs:
   test-typescript:
     name: TypeScript Tests
@@ -14,29 +13,29 @@ jobs:
     permissions:
       contents: read
     steps:
-    - name: Checkout
-      id: checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
 
-    - name: Setup Node.js
-      id: setup-node
-      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # 6.4.0
-      with:
-        node-version-file: .node-version
-        cache: npm
+      - name: Setup Node.js
+        id: setup-node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # 6.4.0
+        with:
+          node-version-file: .node-version
+          cache: npm
 
-    - name: Install Dependencies
-      id: npm-ci
-      run: npm ci
+      - name: Install Dependencies
+        id: npm-ci
+        run: npm ci
 
-    - name: Check Format
-      id: npm-format-check
-      run: npm run format:check
+      - name: Check Format
+        id: npm-format-check
+        run: npm run format:check
 
-    - name: Lint
-      id: npm-lint
-      run: npm run lint
+      - name: Lint
+        id: npm-lint
+        run: npm run lint
 
-    - name: Test
-      id: npm-ci-test
-      run: npm run ci-test
+      - name: Test
+        id: npm-ci-test
+        run: npm run ci-test
