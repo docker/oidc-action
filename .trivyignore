@@ -1,0 +1,9 @@
+# undici WebSocket / permessage-deflate vulnerabilities.
+# undici is pulled in transitively via @actions/core -> @actions/http-client,
+# which only performs HTTP requests; the affected WebSocket code paths are
+# never exercised by this action's runtime.
+CVE-2026-1525
+CVE-2026-1526
+CVE-2026-1527
+CVE-2026-2229
+CVE-2026-22036
