@@ -12,10 +12,10 @@ name: Check Transpiled JavaScript
 on:
   pull_request:
     branches:
-      - main
+    - main
   push:
     branches:
-      - main
+    - main
 
 permissions:
   contents: read
@@ -26,47 +26,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      id: checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Setup Node.js
-        id: setup-node
-        uses: actions/setup-node@v5
-        with:
-          node-version-file: .node-version
-          cache: npm
+    - name: Setup Node.js
+      id: setup-node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # 6.4.0
+      with:
+        node-version-file: .node-version
+        cache: npm
 
-      - name: Install Dependencies
-        id: install
-        run: npm ci
+    - name: Install Dependencies
+      id: install
+      run: npm ci
 
-      - name: Build dist/ Directory
-        id: build
-        run: npm run bundle
+    - name: Build dist/ Directory
+      id: build
+      run: npm run bundle
 
-      # This will fail the workflow if the `dist/` directory is different than
-      # expected.
-      - name: Compare Directories
-        id: diff
-        run: |
-          if [ ! -d dist/ ]; then
-            echo "Expected dist/ directory does not exist.  See status below:"
-            ls -la ./
-            exit 1
-          fi
-          if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff --ignore-space-at-eol --text dist/
-            exit 1
-          fi
+    # This will fail the workflow if the `dist/` directory is different than
+    # expected.
+    - name: Compare Directories
+      id: diff
+      run: |
+        if [ ! -d dist/ ]; then
+          echo "Expected dist/ directory does not exist.  See status below:"
+          ls -la ./
+          exit 1
+        fi
+        if [ "$(git diff --ignore-space-at-eol --text dist/ | wc -l)" -gt "0" ]; then
+          echo "Detected uncommitted changes after build. See status below:"
+          git diff --ignore-space-at-eol --text dist/
+          exit 1
+        fi
 
-      # If `dist/` was different than expected, upload the expected version as a
-      # workflow artifact.
-      - if: ${{ failure() && steps.diff.outcome == 'failure' }}
-        name: Upload Artifact
-        id: upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
+    # If `dist/` was different than expected, upload the expected version as a
+    # workflow artifact.
+    - if: ${{ failure() && steps.diff.outcome == 'failure' }}
+      name: Upload Artifact
+      id: upload
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # 7.0.1
+      with:
+        name: dist
+        path: dist/
