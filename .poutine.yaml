@@ -1,0 +1,11 @@
+# Suppress poutine findings that we accept as a documented exception.
+# See https://github.com/boostsecurityio/poutine for the config schema.
+skip:
+  # Both actions are widely used, actively maintained, and pinned by SHA in
+  # the workflows that consume them. The supply-chain risk is mitigated by
+  # SHA pinning; the rule fires only because the owners are not enrolled in
+  # GitHub's verified-creator program.
+  - rule: github_action_from_unverified_creator_used
+    purl:
+      - pkg:githubactions/super-linter/super-linter
+      - pkg:githubactions/licensee/setup-licensed
