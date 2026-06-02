@@ -17,21 +17,24 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   licensed:
     name: Check Licenses
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v4
+        # zizmor: ignore[artipacked] this workflow pushes commits, so credentials must persist
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Node.js
         id: setup-node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -42,11 +45,11 @@ jobs:
 
       - name: Setup Ruby
         id: setup-ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
         with:
           ruby-version: ruby
 
-      - uses: licensee/setup-licensed@v1.3.2
+      - uses: licensee/setup-licensed@0d52e575b3258417672be0dff2f115d7db8771d8 # v1.3.2
         with:
           version: 4.x
           github_token: ${{ secrets.GITHUB_TOKEN }}

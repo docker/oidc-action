@@ -1,7 +1,7 @@
 {
   "name": "oidc-action",
   "description": "GitHub OIDC action for Docker Hub",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Docker, Inc.",
   "type": "module",
   "private": true,
@@ -40,7 +40,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.1"
   },
   "devDependencies": {
     "@eslint/compat": "^1.2.9",
