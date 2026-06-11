@@ -25,5 +25,5 @@ outputs:
       password to the docker/login-action or as a bearer token for API requests.
 
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
