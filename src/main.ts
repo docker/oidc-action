@@ -3,6 +3,9 @@
 import * as core from '@actions/core';
 import { validate as uuidValidate } from 'uuid';
 
+const audience = 'https://identity.docker.com';
+const url = 'https://identity.docker.com/oauth/token';
+
 type Input = {
   connectionId: string;
   expiresIn: number;
@@ -24,19 +27,22 @@ type ErrorBody = {
 export async function run(): Promise<void> {
   try {
     const input = getInput();
-    const idToken = await core.getIDToken('api.docker.com');
+    const idToken = await core.getIDToken(audience);
 
-    const resp = await fetch('https://hub.docker.com/v2/auth/oidc/token', {
+    const data = new URLSearchParams();
+    data.set('grant_type', 'urn:ietf:params:oauth:grant-type:token-exchange');
+    data.set('subject_token_type', 'urn:ietf:params:oauth:token-type:id_token');
+    data.set('subject_token', idToken);
+    data.set('connection_id', input.connectionId);
+    data.set('expires_in', input.expiresIn.toString());
+
+    const resp = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'User-Agent': `github.com/docker/oidc-action` // TODO: Add version
       },
-      body: JSON.stringify({
-        connection_id: input.connectionId,
-        token: idToken,
-        expires_in: input.expiresIn
-      })
+      body: data
     });
 
     if (!resp.ok) {

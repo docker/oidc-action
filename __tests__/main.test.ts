@@ -36,7 +36,7 @@ function mockInput(opts?: { name: string; value: string }) {
 
 describe('main.ts', () => {
   beforeAll(() => {
-    apiMock = nock('https://hub.docker.com').post('/v2/auth/oidc/token');
+    apiMock = nock('https://identity.docker.com').post('/oauth/token');
 
     core.getIDToken.mockResolvedValue('id_token');
   });
