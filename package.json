@@ -1,7 +1,7 @@
 {
   "name": "oidc-action",
   "description": "GitHub OIDC action for Docker Hub",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "Docker, Inc.",
   "type": "module",
   "private": true,
