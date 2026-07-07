@@ -75,7 +75,7 @@ describe('main.ts', () => {
 
   it('Errors for a non-200 response', async () => {
     mockInput();
-    apiMock.reply(500, { message: 'oh no!' });
+    apiMock.reply(500, { description: 'oh no!' });
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
       'oidc token request failed with a status of 500: oh no!'

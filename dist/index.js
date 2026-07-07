@@ -27273,13 +27273,13 @@ async function run() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'User-Agent': `github.com/docker/oidc-action` // TODO: Add version
+                'User-Agent': 'github.com/docker/oidc-action' // TODO: Add version
             },
             body: data
         });
         if (!resp.ok) {
             const errBody = (await resp.json());
-            coreExports.setFailed(`oidc token request failed with a status of ${resp.status}: ${errBody.message}`);
+            coreExports.setFailed(`oidc token request failed with a status of ${resp.status}: ${errBody.description}`);
             return;
         }
         const body = (await resp.json());
