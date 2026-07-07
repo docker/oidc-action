@@ -16,7 +16,7 @@ type ResponseBody = {
 };
 
 type ErrorBody = {
-  message: string;
+  description: string;
 };
 
 /**
@@ -40,7 +40,7 @@ export async function run(): Promise<void> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': `github.com/docker/oidc-action` // TODO: Add version
+        'User-Agent': 'github.com/docker/oidc-action' // TODO: Add version
       },
       body: data
     });
@@ -49,7 +49,7 @@ export async function run(): Promise<void> {
       const errBody = (await resp.json()) as ErrorBody;
 
       core.setFailed(
-        `oidc token request failed with a status of ${resp.status}: ${errBody.message}`
+        `oidc token request failed with a status of ${resp.status}: ${errBody.description}`
       );
 
       return;
