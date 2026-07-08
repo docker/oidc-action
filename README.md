@@ -21,7 +21,7 @@ steps:
       connection_id: 867f9d74-789a-4828-a856-12d46bfbbbe7
 
   - name: Docker login
-    uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+    uses: docker/login-action@v4
     with:
       username: myorgname
       password: ${{ steps.docker_oidc.outputs.token }}
