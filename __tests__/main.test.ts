@@ -36,7 +36,7 @@ function mockInput(opts?: { name: string; value: string }) {
 
 describe('main.ts', () => {
   beforeAll(() => {
-    apiMock = nock('https://hub.docker.com').post('/v2/auth/oidc/token');
+    apiMock = nock('https://identity.docker.com').post('/oauth/token');
 
     core.getIDToken.mockResolvedValue('id_token');
   });
@@ -75,7 +75,7 @@ describe('main.ts', () => {
 
   it('Errors for a non-200 response', async () => {
     mockInput();
-    apiMock.reply(500, { message: 'oh no!' });
+    apiMock.reply(500, { description: 'oh no!' });
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
       'oidc token request failed with a status of 500: oh no!'
