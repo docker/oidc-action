@@ -31145,6 +31145,45 @@ function validate(uuid) {
 
 const audience = 'https://identity.docker.com';
 const url = 'https://identity.docker.com/oauth/token';
+const maxRetries = 5;
+/**
+ * Parses a Retry-After header value into a delay in milliseconds. The header
+ * is a number of seconds.
+ *
+ * @param value The Retry-After header value, or null if absent.
+ * @returns The delay in milliseconds, or null if the value is missing/invalid.
+ */
+function parseRetryAfter(value) {
+    if (value === null) {
+        return null;
+    }
+    const seconds = Number(value);
+    if (isNaN(seconds)) {
+        return null;
+    }
+    return Math.max(0, seconds * 1000);
+}
+/**
+ * Performs a fetch, retrying up to maxRetries times on a 429 response while
+ * honoring the Retry-After header.
+ *
+ * @param url The URL to request.
+ * @param init The fetch request options.
+ * @returns The final response.
+ */
+async function fetchWithRetry(url, init) {
+    let resp = await fetch(url, init);
+    for (let attempt = 0; resp.status === 429 && attempt < maxRetries; attempt++) {
+        const delay = parseRetryAfter(resp.headers.get('retry-after'));
+        if (delay === null) {
+            break;
+        }
+        coreExports.info(`oidc token request rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        resp = await fetch(url, init);
+    }
+    return resp;
+}
 /**
  * The main function for the action.
  *
@@ -31160,7 +31199,7 @@ async function run() {
         data.set('subject_token', idToken);
         data.set('connection_id', input.connectionId);
         data.set('expires_in', input.expiresIn.toString());
-        const resp = await fetch(url, {
+        const resp = await fetchWithRetry(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',

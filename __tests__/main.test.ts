@@ -82,6 +82,33 @@ describe('main.ts', () => {
     );
   });
 
+  it('Retries on a 429 response honoring Retry-After', async () => {
+    mockInput();
+    apiMock.reply(429, { description: 'slow down' }, { 'Retry-After': '0' });
+    nock('https://identity.docker.com')
+      .post('/oauth/token')
+      .reply(200, { access_token: 'test_access_token' });
+    await run();
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(core.setOutput).toHaveBeenNthCalledWith(
+      1,
+      'token',
+      'test_access_token'
+    );
+  });
+
+  it('Fails after exhausting retries on repeated 429s', async () => {
+    mockInput();
+    nock('https://identity.docker.com')
+      .post('/oauth/token')
+      .times(6)
+      .reply(429, { description: 'slow down' }, { 'Retry-After': '0' });
+    await run();
+    expect(core.setFailed).toHaveBeenCalledWith(
+      'oidc token request failed with a status of 429: slow down'
+    );
+  });
+
   it('Succeeds for a 200 response', async () => {
     apiMock.reply(200, { access_token: 'test_access_token' });
     mockInput();
