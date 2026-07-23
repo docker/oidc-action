@@ -75,10 +75,10 @@ describe('main.ts', () => {
 
   it('Errors for a non-200 response', async () => {
     mockInput();
-    apiMock.reply(500, { description: 'oh no!' });
+    apiMock.reply(500, { error: 'server_error', error_description: 'oh no!' });
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
-      'oidc token request failed with a status of 500: oh no!'
+      'oidc token request failed with a status of 500: {"error":"server_error","error_description":"oh no!"}'
     );
   });
 
@@ -102,10 +102,14 @@ describe('main.ts', () => {
     nock('https://identity.docker.com')
       .post('/oauth/token')
       .times(6)
-      .reply(429, { description: 'slow down' }, { 'Retry-After': '0' });
+      .reply(
+        429,
+        { error: 'rate_limited', error_description: 'slow down' },
+        { 'Retry-After': '0' }
+      );
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
-      'oidc token request failed with a status of 429: slow down'
+      'oidc token request failed with a status of 429: {"error":"rate_limited","error_description":"slow down"}'
     );
   });
 
