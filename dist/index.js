@@ -31209,7 +31209,7 @@ async function run() {
         });
         if (!resp.ok) {
             const errBody = (await resp.json());
-            coreExports.setFailed(`oidc token request failed with a status of ${resp.status}: ${errBody.description}`);
+            coreExports.setFailed(`oidc token request failed with a status of ${resp.status}: ${JSON.stringify(errBody)}`);
             return;
         }
         const body = (await resp.json());
