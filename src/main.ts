@@ -16,7 +16,9 @@ type ResponseBody = {
 };
 
 type ErrorBody = {
-  description: string;
+  error: string;
+  error_description?: string;
+  error_uri?: string;
 };
 
 const maxRetries = 5;
@@ -106,7 +108,7 @@ export async function run(): Promise<void> {
       const errBody = (await resp.json()) as ErrorBody;
 
       core.setFailed(
-        `oidc token request failed with a status of ${resp.status}: ${errBody.description}`
+        `oidc token request failed with a status of ${resp.status}: ${JSON.stringify(errBody)}`
       );
 
       return;
