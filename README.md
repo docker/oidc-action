@@ -39,7 +39,7 @@ jobs:
         id: docker_oidc
         uses: docker/oidc-action@v1
         with:
-          connection_id: <my-connection-id>
+          connection-id: <my-connection-id>
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v4
@@ -52,8 +52,8 @@ jobs:
 
 | Input           | Required | Default | Description                                                                                    |
 | --------------- | -------- | ------- | ---------------------------------------------------------------------------------------------- |
-| `connection_id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                       |
-| `expires_in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `3600` (1 hour). |
+| `connection-id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                       |
+| `expires-in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `3600` (1 hour). |
 
 ## Outputs
 

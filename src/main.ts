@@ -135,17 +135,26 @@ export async function run(): Promise<void> {
  * @returns Input
  */
 function getInput(): Input {
-  const connectionId = core.getInput('connection_id');
-  const expiresInInput = core.getInput('expires_in');
+  // The kebab-case inputs are canonical; the snake_case inputs are deprecated
+  // aliases kept for backward compatibility. Prefer the kebab-case value when
+  // it is set, otherwise fall back to the deprecated one.
+  const connectionId =
+    core.getInput('connection-id') || core.getInput('connection_id');
+  const expiresInInput =
+    core.getInput('expires-in') || core.getInput('expires_in') || '300';
+
+  if (connectionId === '') {
+    throw new Error('connection-id is required.');
+  }
 
   if (!uuidValidate(connectionId)) {
-    throw new Error('Invalid connection_id. Must be a v4 UUID.');
+    throw new Error('Invalid connection-id. Must be a v4 UUID.');
   }
 
   const expiresIn = Number(expiresInInput);
   if (isNaN(expiresIn) || expiresIn < 300 || expiresIn > 3600) {
     throw new Error(
-      `Invalid expires_in: ${expiresInInput}. Must be between 300 and 3600`
+      `Invalid expires-in: ${expiresInInput}. Must be between 300 and 3600`
     );
   }
 
