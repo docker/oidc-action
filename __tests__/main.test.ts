@@ -17,65 +17,82 @@ jest.unstable_mockModule('@actions/core', () => core);
 // mocks are used in place of any actual dependencies.
 const { run } = await import('../src/main.js');
 
-let apiMock: nock.Interceptor;
-
-function mockInput(opts?: { name: string; value: string }) {
+/**
+ * Mocks core.getInput for the given inputs. By default the canonical
+ * kebab-case inputs are populated with valid values. Overrides are merged in
+ * and may set snake_case aliases or clear an input by passing an empty string.
+ *
+ * Unset inputs resolve to '', matching the real behavior of @actions/core.
+ */
+function mockInput(overrides: { [key: string]: string } = {}) {
   const values: { [key: string]: string } = {
-    connection_id: uuidv4(),
-    expires_in: '300'
+    'connection-id': uuidv4(),
+    'expires-in': '300',
+    ...overrides
   };
 
-  if (opts !== undefined) {
-    values[opts.name] = opts.value;
-  }
+  core.getInput.mockImplementation((name) => values[name] ?? '');
+}
 
-  core.getInput.mockImplementation((name) => {
-    return values[name];
-  });
+/**
+ * Intercepts the token exchange request, capturing the parsed form body so
+ * tests can assert on the values that were actually sent.
+ */
+function mockTokenExchange(
+  status: number,
+  body: object,
+  headers?: Record<string, string>
+): { body: Record<string, string> } {
+  const captured = { body: {} as Record<string, string> };
+  nock('https://identity.docker.com')
+    .post('/oauth/token', (b: Record<string, string>) => {
+      captured.body = b;
+      return true;
+    })
+    .reply(status, body, headers);
+  return captured;
 }
 
 describe('main.ts', () => {
   beforeAll(() => {
-    apiMock = nock('https://identity.docker.com').post('/oauth/token');
-
     core.getIDToken.mockResolvedValue('id_token');
   });
 
   afterEach(() => {
     jest.resetAllMocks();
+    nock.cleanAll();
   });
 
-  it('Errors for an invalid connection_id', async () => {
-    mockInput({ name: 'connection_id', value: 'invalid' });
+  it('Errors when no connection id is provided', async () => {
+    mockInput({ 'connection-id': '' });
+    await run();
+    expect(core.setFailed).toHaveBeenCalledWith('connection-id is required.');
+  });
+
+  it('Errors for an invalid connection-id', async () => {
+    mockInput({ 'connection-id': 'invalid' });
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
-      'Invalid connection_id. Must be a v4 UUID.'
+      'Invalid connection-id. Must be a v4 UUID.'
     );
   });
 
-  it('Errors for an invalid expires_in', async () => {
-    mockInput({ name: 'expires_in', value: 'invalid' });
-    await run();
-    expect(core.setFailed).toHaveBeenCalledWith(
-      'Invalid expires_in: invalid. Must be between 300 and 3600'
-    );
-
-    mockInput({ name: 'expires_in', value: '3601' });
-    await run();
-    expect(core.setFailed).toHaveBeenCalledWith(
-      'Invalid expires_in: 3601. Must be between 300 and 3600'
-    );
-
-    mockInput({ name: 'expires_in', value: '299' });
-    await run();
-    expect(core.setFailed).toHaveBeenCalledWith(
-      'Invalid expires_in: 299. Must be between 300 and 3600'
-    );
+  it('Errors for an invalid expires-in', async () => {
+    for (const value of ['invalid', '3601', '299']) {
+      mockInput({ 'expires-in': value });
+      await run();
+      expect(core.setFailed).toHaveBeenCalledWith(
+        `Invalid expires-in: ${value}. Must be between 300 and 3600`
+      );
+    }
   });
 
   it('Errors for a non-200 response', async () => {
     mockInput();
-    apiMock.reply(500, { error: 'server_error', error_description: 'oh no!' });
+    mockTokenExchange(500, {
+      error: 'server_error',
+      error_description: 'oh no!'
+    });
     await run();
     expect(core.setFailed).toHaveBeenCalledWith(
       'oidc token request failed with a status of 500: {"error":"server_error","error_description":"oh no!"}'
@@ -84,10 +101,12 @@ describe('main.ts', () => {
 
   it('Retries on a 429 response honoring Retry-After', async () => {
     mockInput();
-    apiMock.reply(429, { description: 'slow down' }, { 'Retry-After': '0' });
-    nock('https://identity.docker.com')
-      .post('/oauth/token')
-      .reply(200, { access_token: 'test_access_token' });
+    mockTokenExchange(
+      429,
+      { description: 'slow down' },
+      { 'Retry-After': '0' }
+    );
+    mockTokenExchange(200, { access_token: 'test_access_token' });
     await run();
     expect(core.setFailed).not.toHaveBeenCalled();
     expect(core.setOutput).toHaveBeenNthCalledWith(
@@ -113,16 +132,58 @@ describe('main.ts', () => {
     );
   });
 
-  it('Succeeds for a 200 response', async () => {
-    apiMock.reply(200, { access_token: 'test_access_token' });
-    mockInput();
+  it('Succeeds using the kebab-case inputs', async () => {
+    const connectionId = uuidv4();
+    mockInput({ 'connection-id': connectionId, 'expires-in': '600' });
+    const req = mockTokenExchange(200, { access_token: 'test_access_token' });
     await run();
     expect(core.setFailed).not.toHaveBeenCalled();
+    expect(req.body.connection_id).toBe(connectionId);
+    expect(req.body.expires_in).toBe('600');
     expect(core.setSecret).toHaveBeenNthCalledWith(1, 'test_access_token');
     expect(core.setOutput).toHaveBeenNthCalledWith(
       1,
       'token',
       'test_access_token'
     );
+  });
+
+  it('Falls back to the deprecated snake_case inputs', async () => {
+    const connectionId = uuidv4();
+    mockInput({
+      'connection-id': '',
+      'expires-in': '',
+      connection_id: connectionId,
+      expires_in: '600'
+    });
+    const req = mockTokenExchange(200, { access_token: 'test_access_token' });
+    await run();
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(req.body.connection_id).toBe(connectionId);
+    expect(req.body.expires_in).toBe('600');
+  });
+
+  it('Prefers kebab-case over deprecated snake_case when both are set', async () => {
+    const kebab = uuidv4();
+    const snake = uuidv4();
+    mockInput({
+      'connection-id': kebab,
+      'expires-in': '600',
+      connection_id: snake,
+      expires_in: '900'
+    });
+    const req = mockTokenExchange(200, { access_token: 'test_access_token' });
+    await run();
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(req.body.connection_id).toBe(kebab);
+    expect(req.body.expires_in).toBe('600');
+  });
+
+  it('Defaults expires-in to 300 when unset', async () => {
+    mockInput({ 'expires-in': '' });
+    const req = mockTokenExchange(200, { access_token: 'test_access_token' });
+    await run();
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(req.body.expires_in).toBe('300');
   });
 });
