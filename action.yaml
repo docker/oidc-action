@@ -15,7 +15,8 @@ inputs:
     description: |
       The number of seconds the token should be valid for. This can be used to
       set a custom expiration time for the token. Value must be a min of 300
-      (5 minutes) and a max of 3600 (1 hour). Default is 300.
+      (5 minutes) and a max of 21600 (6 hours). The max is to match the maximum
+      allowed by GitHub hosted runners. Default is 300.
   connection_id:
     description: |
       The connection identifier to use for the OIDC flow. This can be found in
@@ -28,7 +29,8 @@ inputs:
     description: |
       The number of seconds the token should be valid for. This can be used to
       set a custom expiration time for the token. Value must be a min of 300
-      (5 minutes) and a max of 3600 (1 hour). Default is 300.
+      (5 minutes) and a max of 21600 (6 hours). The max is to match the maximum
+      allowed by GitHub hosted runners. Default is 300.
     deprecationMessage: |
       The input 'expires_in' is deprecated and will be removed in a future
       release. Please use 'expires-in' instead.

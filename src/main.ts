@@ -152,9 +152,9 @@ function getInput(): Input {
   }
 
   const expiresIn = Number(expiresInInput);
-  if (isNaN(expiresIn) || expiresIn < 300 || expiresIn > 3600) {
+  if (isNaN(expiresIn) || expiresIn < 300 || expiresIn > 21600) {
     throw new Error(
-      `Invalid expires-in: ${expiresInInput}. Must be between 300 and 3600`
+      `Invalid expires-in: ${expiresInInput}. Must be between 300 and 21600`
     );
   }
 

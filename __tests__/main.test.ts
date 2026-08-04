@@ -78,11 +78,11 @@ describe('main.ts', () => {
   });
 
   it('Errors for an invalid expires-in', async () => {
-    for (const value of ['invalid', '3601', '299']) {
+    for (const value of ['invalid', '21601', '299']) {
       mockInput({ 'expires-in': value });
       await run();
       expect(core.setFailed).toHaveBeenCalledWith(
-        `Invalid expires-in: ${value}. Must be between 300 and 3600`
+        `Invalid expires-in: ${value}. Must be between 300 and 21600`
       );
     }
   });
