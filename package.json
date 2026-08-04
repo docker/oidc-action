@@ -1,7 +1,7 @@
 {
   "name": "oidc-action",
   "description": "GitHub OIDC action for Docker Hub",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "author": "Docker, Inc.",
   "type": "module",
   "private": true,
@@ -74,7 +74,7 @@
   },
   "overrides": {
     "@actions/http-client": {
-      "undici": "^6.27.0"
+      "undici": "^6.28.0"
     }
   }
 }

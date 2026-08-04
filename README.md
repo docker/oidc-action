@@ -50,10 +50,10 @@ jobs:
 
 ## Inputs
 
-| Input           | Required | Default | Description                                                                                    |
-| --------------- | -------- | ------- | ---------------------------------------------------------------------------------------------- |
-| `connection-id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                       |
-| `expires-in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `3600` (1 hour). |
+| Input           | Required | Default | Description                                                                                      |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `connection-id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                         |
+| `expires-in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `21600` (6 hours). |
 
 ## Outputs
 
