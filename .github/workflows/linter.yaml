@@ -10,7 +10,7 @@ permissions:
   contents: read
   packages: read
   statuses: write
-  issues: read
+  issues: write
 
 jobs:
   lint:
