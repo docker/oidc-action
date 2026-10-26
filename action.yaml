@@ -17,6 +17,12 @@ inputs:
       set a custom expiration time for the token. Value must be a min of 300
       (5 minutes) and a max of 21600 (6 hours). The max is to match the maximum
       allowed by GitHub hosted runners. Default is 300.
+  mask-token:
+    description: |
+      Mask the returned Docker access token in workflow logs. Set to false to
+      pass the token between jobs as a job output. Disabling masking means the
+      token will not be automatically redacted in the producing job logs.
+    default: 'true'
   connection_id:
     description: |
       The connection identifier to use for the OIDC flow. This can be found in

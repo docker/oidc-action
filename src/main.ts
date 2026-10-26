@@ -9,6 +9,7 @@ const url = 'https://identity.docker.com/oauth/token';
 type Input = {
   connectionId: string;
   expiresIn: number;
+  maskToken: boolean;
 };
 
 type ResponseBody = {
@@ -116,7 +117,9 @@ export async function run(): Promise<void> {
 
     const body = (await resp.json()) as ResponseBody;
 
-    core.setSecret(body.access_token); // redacted in workflow logs
+    if (input.maskToken) {
+      core.setSecret(body.access_token); // redacted in workflow logs
+    }
     core.setOutput('token', body.access_token);
   } catch (e) {
     if (e instanceof Error) {
@@ -160,6 +163,7 @@ function getInput(): Input {
 
   return {
     connectionId,
-    expiresIn
+    expiresIn,
+    maskToken: core.getBooleanInput('mask-token')
   };
 }
