@@ -61,7 +61,7 @@
     "eslint-plugin-prettier": "^5.5.7",
     "jest": "^30.5.2",
     "make-coverage-badge": "^1.2.0",
-    "nock": "^14.0.17",
+    "nock": "^15.0.4",
     "prettier": "^3.9.10",
     "prettier-eslint": "^17.1.2",
     "rollup": "^4.65.0",
