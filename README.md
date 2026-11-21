@@ -26,7 +26,7 @@ ID. Follow the steps in the
 
 The action requires `id-token: write` permission so the workflow can request a
 GitHub OIDC token. The exchanged Docker token is returned as the `token` output
-and is automatically masked in workflow logs.
+and is masked in workflow logs by default.
 
 ```yaml
 jobs:
@@ -48,12 +48,48 @@ jobs:
           password: ${{ steps.docker_oidc.outputs.token }}
 ```
 
+## Passing a token between jobs
+
+GitHub skips job outputs containing masked secrets. To pass the token to another
+job or reusable workflow, set `mask-token: 'false'` in the producing job, see
+the example below:
+
+```yaml
+jobs:
+  docker-token:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    outputs:
+      token: ${{ steps.oidc.outputs.token }}
+    steps:
+      - name: Get Docker token
+        id: oidc
+        uses: docker/oidc-action@v1
+        with:
+          connection-id: ${{ vars.DOCKERHUB_OIDC_CONNECTIONID }}
+          mask-token: 'false'
+
+  publish:
+    needs: docker-token
+    uses: ./.github/workflows/publish.yaml
+    secrets:
+      registry-password: ${{ needs.docker-token.outputs.token }}
+```
+
+Disabling masking removes automatic log redaction of the Docker token in the
+producing job. Avoid printing it and mask it in any receiving job before use.
+
+When you control the consuming job, prefer requesting a fresh token there and
+keep masking enabled.
+
 ## Inputs
 
-| Input           | Required | Default | Description                                                                                      |
-| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------ |
-| `connection-id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                         |
-| `expires-in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `21600` (6 hours). |
+| Input           | Required | Default | Description                                                                                             |
+| --------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `connection-id` | Yes      | —       | The OIDC connection ID from your Docker organization. Must be a v4 UUID.                                |
+| `expires-in`    | No       | `300`   | Lifetime of the returned token, in seconds. Must be between `300` (5 min) and `21600` (6 hours).        |
+| `mask-token`    | No       | `true`  | Mask the returned Docker token in workflow logs. Set to `false` to allow forwarding it as a job output. |
 
 ## Outputs
 

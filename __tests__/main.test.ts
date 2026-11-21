@@ -28,10 +28,12 @@ function mockInput(overrides: { [key: string]: string } = {}) {
   const values: { [key: string]: string } = {
     'connection-id': uuidv4(),
     'expires-in': '300',
+    'mask-token': 'true',
     ...overrides
   };
 
   core.getInput.mockImplementation((name) => values[name] ?? '');
+  core.getBooleanInput.mockImplementation((name) => values[name] === 'true');
 }
 
 /**
@@ -146,6 +148,16 @@ describe('main.ts', () => {
       'token',
       'test_access_token'
     );
+  });
+
+  it('Exports an unmasked token when mask-token is false', async () => {
+    mockInput({ 'mask-token': 'false' });
+    mockTokenExchange(200, { access_token: 'test_access_token' });
+    await run();
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(core.setSecret).not.toHaveBeenCalled();
+    expect(core.setOutput).toHaveBeenCalledWith('token', 'test_access_token');
+    expect(core.getBooleanInput).toHaveBeenCalledWith('mask-token');
   });
 
   it('Falls back to the deprecated snake_case inputs', async () => {

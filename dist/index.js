@@ -29565,6 +29565,27 @@ function getInput$1(name, options) {
     return val.trim();
 }
 /**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput$1(name);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
+/**
  * Sets the value of an output.
  *
  * @param     name     name of the output to set
@@ -29695,7 +29716,9 @@ async function run() {
             return;
         }
         const body = (await resp.json());
-        setSecret(body.access_token); // redacted in workflow logs
+        if (input.maskToken) {
+            setSecret(body.access_token); // redacted in workflow logs
+        }
         setOutput('token', body.access_token);
     }
     catch (e) {
@@ -29729,7 +29752,8 @@ function getInput() {
     }
     return {
         connectionId,
-        expiresIn
+        expiresIn,
+        maskToken: getBooleanInput('mask-token')
     };
 }
 
