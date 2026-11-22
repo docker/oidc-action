@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        # zizmor: ignore[artipacked] this workflow pushes release tags
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Read release version
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { appendFileSync, readFileSync } from 'node:fs'
+
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'))
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          assert.match(pkg.version, /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/)
+          assert.equal(lock.version, pkg.version, 'package-lock.json version must match package.json')
+          assert.equal(lock.packages[''].version, pkg.version, 'Lockfile root package version must match package.json')
+          appendFileSync(process.env.GITHUB_ENV, `VERSION=v${pkg.version}\n`)
+          NODE
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check release
+        run: |
+          npm run format:check
+          npm run lint
+          npm run ci-test
+          npm run package
+          git diff --exit-code -- dist/
+
+      - name: Publish release
+        run: |
+          if git show-ref --verify --quiet "refs/tags/$VERSION"; then
+            if [[ "$(git rev-parse "$VERSION^{commit}")" != "$GITHUB_SHA" ]]; then
+              echo "$VERSION already points to a different commit"
+              exit 1
+            fi
+          else
+            major="${VERSION%%.*}"
+            previous_major=$(git rev-parse --verify --quiet "refs/tags/$major" || true)
+            latest=$(git tag --list "$major.*" | { cat; echo "$VERSION"; } | sort -V | tail -n 1)
+            if [[ "$latest" != "$VERSION" ]]; then
+              echo "Cannot release $VERSION because $latest already exists"
+              exit 1
+            fi
+
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git tag --annotate "$VERSION" --message "$VERSION Release"
+            git tag --force --annotate "$major" --message "Sync $major tag with $VERSION"
+            git push --atomic --force-with-lease="refs/tags/$major:$previous_major" \
+              origin "refs/tags/$VERSION" "refs/tags/$major"
+          fi
+
+          if is_draft=$(gh release view "$VERSION" --json isDraft --jq .isDraft); then
+            if [[ "$is_draft" == true ]]; then
+              gh release edit "$VERSION" --draft=false
+            fi
+          else
+            gh release create "$VERSION" --verify-tag --title "$VERSION" --generate-notes
+          fi
